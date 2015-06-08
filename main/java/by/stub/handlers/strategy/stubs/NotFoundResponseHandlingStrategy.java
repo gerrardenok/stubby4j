@@ -19,31 +19,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package by.stub.handlers.strategy.stubs;
 
-import by.stub.utils.HandlerUtils;
 import by.stub.yaml.stubs.StubRequest;
 import org.eclipse.jetty.http.HttpStatus;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 
-import static by.stub.utils.FileUtils.BR;
-
 public final class NotFoundResponseHandlingStrategy implements StubResponseHandlingStrategy {
 
-   public NotFoundResponseHandlingStrategy() {
+   public NotFoundResponseHandlingStrategy() {}
 
+   @Override
+   public int hashCode() {
+      return super.hashCode();
    }
 
    @Override
    public void handle(final HttpServletResponse response, final StubRequest assertionStubRequest) throws Exception {
+      JSONObject jResponse = new JSONObject();
+      jResponse.put("query", new JSONObject(assertionStubRequest.getQuery()));
+      jResponse.put("headers", new JSONObject(assertionStubRequest.getHeaders()));
+      jResponse.put("body", assertionStubRequest.getPostBody());
 
-      HandlerUtils.setResponseMainHeaders(response);
-
-      final String postMessage = assertionStubRequest.hasPostBody() ? String.format(BR + "\t%s%s", "With post data: ", assertionStubRequest.getPostBody()) : "";
-      final String headersMessage = assertionStubRequest.hasHeaders() ? String.format(BR + "\t%s%s", "With headers: ", assertionStubRequest.getHeaders()) : "";
-      final String queryMessage = (assertionStubRequest.hasQuery() ? String.format(BR + "\t%s%s", "With query params: ", assertionStubRequest.getQuery()) : "");
-
-      final String error = String.format("(404) Nothing found for %s request at URI %s%s%s%s", assertionStubRequest.getMethod().get(0), assertionStubRequest.getUrl(), postMessage, headersMessage, queryMessage);
-
-      HandlerUtils.configureErrorResponse(response, HttpStatus.NOT_FOUND_404, error);
+      response.setHeader("Content-Type", "application/json");
+      response.getWriter().print(jResponse.toString());
+      response.setStatus(HttpStatus.NOT_FOUND_404);
    }
+
 }
